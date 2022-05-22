@@ -17,16 +17,17 @@ typedef struct {
     size_t size;
     size_t filled;
     hmap_node_t** entry;
+    uint32_t(*key_gen_fn)(const void*);
 } hmap_t;
 
-uint32_t hmap_gen_key(const void*, size_t);
+uint32_t hmap_gen_key(hmap_t*, const void*);
 hmap_t* hmap_new(size_t);
 float hmap_get_load(hmap_t*);
-void hmap_resize(hmap_t*);
+int hmap_resize(hmap_t**);
 int hmap_set(hmap_t*, char*, void*);
-hmap_node_t* hmap_find_node(hmap_t*, char *);
 void* hmap_unset(hmap_t*, char*);
 void* hmap_get(hmap_t*, char *key);
+hmap_node_t* hmap_find_node(hmap_t*, char *);
 void hmap_free(hmap_t*);
 
 typedef struct {

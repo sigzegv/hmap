@@ -4,7 +4,6 @@ Implements a hashmap with string as key.
 It uses Murmur hash algorithm to generate indexes from keys.
 
 ## TODO
-* implement resize function
 * allow custom key generation function
 * allow any type as key
 * add replace option for existing keys

@@ -1,5 +1,19 @@
 #include "hmap.h"
 
+uint32_t
+murmur_hash(const void* key) {
+    uint32_t h = 0x12345678; // Seed
+    const uint8_t* str = key;
+
+    for (; *str; ++str) {
+        h ^= *str;
+        h *= 0x5bd1e995;
+        h ^= h >> 15;
+    }
+
+    return h;
+}
+
 /**
  * create new hmap node
  */
@@ -56,17 +70,9 @@ hmap_node_free(hmap_node_t* node) {
 }
 
 uint32_t
-hmap_gen_key(const void * key, size_t map_size) {
-    uint32_t h = 0x12345678; // Seed
-    const uint8_t* str = key;
-
-    for (; *str; ++str) {
-        h ^= *str;
-        h *= 0x5bd1e995;
-        h ^= h >> 15;
-    }
-
-    return h % map_size;
+hmap_gen_key(hmap_t* hmap, const void * key) {
+    uint32_t h = hmap->key_gen_fn(key);
+    return h % hmap->size;
 }
 
 hmap_t*
@@ -79,6 +85,7 @@ hmap_new(size_t sz) {
     h->size = sz;
     h->filled = 0;
     h->entry = malloc(sizeof(hmap_node_t*) * h->size);
+    h->key_gen_fn = murmur_hash;
 
     if (NULL == h->entry) {
         free(h);
@@ -130,7 +137,7 @@ hmap_set(hmap_t* h, char *key, void* data) {
 
 hmap_node_t*
 hmap_find_node(hmap_t* h, char *key) {
-    uint32_t k = hmap_gen_key(key, h->size);
+    uint32_t k = hmap_gen_key(h, key);
     hmap_node_t** n = h->entry + k;
 
     if (NULL == *n) {
@@ -151,7 +158,7 @@ hmap_find_node(hmap_t* h, char *key) {
 
 void*
 hmap_unset(hmap_t* h, char* key) {
-    uint32_t k = hmap_gen_key(key, h->size);
+    uint32_t k = hmap_gen_key(h, key);
     hmap_node_t** n = h->entry + k;
     hmap_node_t* node = hmap_find_node(h, key);
 
