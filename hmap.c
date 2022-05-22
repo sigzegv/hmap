@@ -106,25 +106,40 @@ hmap_get_load(hmap_t* h) {
     return h->filled / h->size;
 }
 
-void
-hmap_resize(hmap_t* h) {
-    hmap_t* nh = hmap_new(h->size * 2);
+int
+hmap_resize(hmap_t** old_h) {
+    hmap_t* new_h = hmap_new((*old_h)->size * 2);
+    if (NULL == new_h) {
+        return 1;
+    }
+
+    // move every node in new map
+    hmap_iter_t* it = hmap_iter_new(*old_h);
+    for (hmap_node_t* n = hmap_iter_next(it); n != NULL; n = hmap_iter_next(it)) {
+        hmap_set(new_h, n->key, n->data);
+    }
+    free(it);
+
+    hmap_free(*old_h);
+    *old_h = new_h;
+
+    return 0;
 }
 
 int
 hmap_set(hmap_t* h, char *key, void* data) {
-    uint32_t k = hmap_gen_key(key, h->size);
+    uint32_t k = hmap_gen_key(h, key);
     hmap_node_t** e = h->entry + k;
 
     if (NULL == *e) {
         *e = hmap_node_new(key, data);
         if (NULL == *e) {
-            return 0;
+            return 1;
         }
     } else {
         hmap_node_t* n = hmap_node_new(key, data);
         if (NULL == n) {
-            return 0;
+            return 1;
         }
 
         hmap_node_append(*e, n);
@@ -132,7 +147,7 @@ hmap_set(hmap_t* h, char *key, void* data) {
 
     ++h->filled;
 
-    return 1;
+    return 0;
 }
 
 hmap_node_t*

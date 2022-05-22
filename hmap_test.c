@@ -62,15 +62,22 @@ test_hmap_iter() {
     hmap_set(h, "k2", "data k2");
     hmap_set(h, "k3", "data k3");
 
-    hmap_iter_t* it = hmap_iter_new(h);
+    hmap_iter_t* it;
+
+    it = hmap_iter_new(h);
     int looped = 0;
     for (hmap_node_t* n = hmap_iter_next(it); n != NULL; n = hmap_iter_next(it), ++looped) {
         CU_ASSERT_PTR_NOT_NULL(n);
     }
     free(it);
+    CU_ASSERT_EQUAL(looped, 3);
+
+    hmap_t* old_h = h;
+    hmap_resize(&h);
+
+    CU_ASSERT_PTR_NOT_EQUAL(old_h, h);
 
     hmap_free(h);
-    CU_ASSERT_EQUAL(looped, 3);
 }
 
 int main()
