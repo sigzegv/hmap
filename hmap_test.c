@@ -95,9 +95,9 @@ int main()
     }
 
     if (
-           (NULL == CU_add_test(pSuite, "hmap_set", test_hmap_set))
-        || (NULL == CU_add_test(pSuite, "hmap_unset", test_hmap_unset))
-        || (NULL == CU_add_test(pSuite, "hmap_iter", test_hmap_iter))
+        (NULL == CU_add_test(pSuite, "hmap_set", test_hmap_set)) ||
+        (NULL == CU_add_test(pSuite, "hmap_unset", test_hmap_unset)) ||
+        (NULL == CU_add_test(pSuite, "hmap_iter", test_hmap_iter))
     ) {
         CU_cleanup_registry();
         return CU_get_error();
