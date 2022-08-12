@@ -69,12 +69,18 @@ hmap_node_free(hmap_node_t* node) {
     node = NULL;
 }
 
+/**
+ * generates a map index from given key
+ */
 uint32_t
 hmap_gen_key(hmap_t* hmap, const void * key) {
     uint32_t h = hmap->key_gen_fn(key);
     return h % hmap->size;
 }
 
+/**
+ * creates a new hash map
+ */
 hmap_t*
 hmap_new(size_t sz) {
     hmap_t* h = malloc(sizeof(hmap_t));
@@ -101,11 +107,18 @@ hmap_new(size_t sz) {
     return h;
 }
 
+/**
+ * gets the current load of the hashmap.
+ * It should be necessary to resize the hashmap after reaching 0.8 of load
+ */
 float
 hmap_get_load(hmap_t* h) {
     return h->filled / h->size;
 }
 
+/**
+ * resize the map doubling it's size
+ */
 int
 hmap_resize(hmap_t** old_h) {
     hmap_t* new_h = hmap_new((*old_h)->size * 2);
@@ -126,6 +139,10 @@ hmap_resize(hmap_t** old_h) {
     return 0;
 }
 
+/**
+ * sets a new value in the hashmap.
+ * data can be any type, it's user's end to handle it.
+ */
 int
 hmap_set(hmap_t* h, char *key, void* data) {
     uint32_t k = hmap_gen_key(h, key);
@@ -150,6 +167,10 @@ hmap_set(hmap_t* h, char *key, void* data) {
     return 0;
 }
 
+/**
+ * Low level function to find a node in the hashmap.
+ * Must not be used directly.
+ */
 hmap_node_t*
 hmap_find_node(hmap_t* h, char *key) {
     uint32_t k = hmap_gen_key(h, key);
@@ -171,6 +192,11 @@ hmap_find_node(hmap_t* h, char *key) {
     return NULL;
 }
 
+/**
+ * removes a value from hashmap. Freeing the slot's memory storing the value
+ * is handled by the hashmap, but the data will not be freed.
+ * Returns the stored data for 'key'. Returns NULL if nothing was unset.
+ */
 void*
 hmap_unset(hmap_t* h, char* key) {
     uint32_t k = hmap_gen_key(h, key);
@@ -195,6 +221,9 @@ hmap_unset(hmap_t* h, char* key) {
     return data;
 }
 
+/**
+ * gets and return a data value for 'key'
+ */
 void*
 hmap_get(hmap_t* h, char *key) {
     hmap_node_t* n = hmap_find_node(h, key);
@@ -205,6 +234,10 @@ hmap_get(hmap_t* h, char *key) {
     return n->data;
 }
 
+/**
+ * frees a hashmap and every data slot.
+ * User data in value will not be freed.
+ */
 void
 hmap_free(hmap_t *h) {
     hmap_iter_t* it = hmap_iter_new(h);
@@ -217,6 +250,9 @@ hmap_free(hmap_t *h) {
     free(h);
 }
 
+/**
+ * creates a new iterator to crawl stored values
+ */
 hmap_iter_t*
 hmap_iter_new(hmap_t* h) {
     hmap_iter_t* i = (hmap_iter_t*)malloc(sizeof(hmap_iter_t));
@@ -231,6 +267,9 @@ hmap_iter_new(hmap_t* h) {
     return i;
 }
 
+/**
+ * returns next node slot found
+ */
 hmap_node_t*
 hmap_iter_next(hmap_iter_t* it) {
     if (it->offset >= it->hmap->size) {
